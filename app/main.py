@@ -3,7 +3,12 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from app.core.config import settings
 from app.core.exceptions import MedtatvaaBaseException
+
+# Import routers
 from app.api.v1.health import router as health_router
+from app.api.v1.patients import router as patients_router
+from app.api.v1.care_contexts import router as care_contexts_router
+from app.api.v1.transactions import router as transactions_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -36,4 +41,20 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "transaction_id": None,
             "status": "FAILED_FINAL",
             "error_code": "FHIR_VALIDATION_FAILED",
-            "message": "Invalid re
+            "message": "Invalid request payload format",
+            "details": exc.errors(),
+        }
+    )
+
+# Register versioned API routers
+app.include_router(health_router, prefix=settings.API_V1_STR)
+app.include_router(patients_router, prefix=settings.API_V1_STR)
+app.include_router(care_contexts_router, prefix=settings.API_V1_STR)
+app.include_router(transactions_router, prefix=settings.API_V1_STR)
+
+@app.get("/")
+async def root():
+    return {
+        "message": "Medtatvaa ABDM Gateway is running.",
+        "docs": "/docs"
+    }
