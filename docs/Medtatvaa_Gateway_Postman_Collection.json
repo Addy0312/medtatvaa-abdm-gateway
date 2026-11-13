@@ -1,0 +1,158 @@
+{
+  "info": {
+    "name": "Medtatvaa ABDM Gateway API",
+    "description": "Standalone REST API contract for MistiqRad and iMagic Neo integration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "System Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/health",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "health"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Register Patient",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-idempotency-key",
+            "value": "req-patient-001",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"local_patient_id\": \"P12345\",\n  \"abha_address\": \"sandbox-user@sbx\",\n  \"name\": \"Test Patient\",\n  \"gender\": \"F\",\n  \"year_of_birth\": 1980\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/patients",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "patients"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Create Care Context",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-idempotency-key",
+            "value": "req-cc-001",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"local_patient_id\": \"P12345\",\n  \"abha_address\": \"sandbox-user@sbx\",\n  \"care_context_reference\": \"US-2026-0001\",\n  \"display_name\": \"Ultrasound Abdomen - 31 Oct 2026\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/care-contexts",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "care-contexts"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Submit Canonical Diagnostic Report",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-idempotency-key",
+            "value": "req-report-001",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"schema_version\": \"1.0\",\n  \"facility\": {\n    \"facility_id\": \"SBX-FACILITY-001\",\n    \"name\": \"Demo Imaging Centre\"\n  },\n  \"patient\": {\n    \"local_patient_id\": \"P12345\",\n    \"abha_address\": \"sandbox-user@sbx\",\n    \"name\": \"Test Patient\",\n    \"gender\": \"F\",\n    \"year_of_birth\": 1980\n  },\n  \"study\": {\n    \"local_study_id\": \"US-2026-0001\",\n    \"study_instance_uid\": \"1.2.840.113619.2.55.3.12345\",\n    \"modality\": \"US\",\n    \"study_date_time\": \"2026-10-31T10:00:00+05:30\",\n    \"description\": \"Ultrasound Abdomen\"\n  },\n  \"report\": {\n    \"local_report_id\": \"RPT-0001\",\n    \"status\": \"FINAL\",\n    \"title\": \"US Abdomen\",\n    \"findings\": \"Normal ultrasound whole abdomen study.\",\n    \"impression\": \"No focal abnormality detected.\",\n    \"finalized_at\": \"2026-10-31T10:20:00+05:30\"\n  },\n  \"reporting_practitioner\": {\n    \"name\": \"Dr. Test Radiologist\",\n    \"registration_number\": \"TEST-REG-1234\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/records/diagnostic-report",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "records",
+            "diagnostic-report"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Transaction Status",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/transactions/{{transaction_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "transactions",
+            "{{transaction_id}}"
+          ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "transaction_id",
+      "value": "gw_example_id",
+      "type": "string"
+    }
+  ]
+}

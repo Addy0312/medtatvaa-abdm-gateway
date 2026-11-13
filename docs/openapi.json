@@ -1,0 +1,798 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Medtatvaa ABDM Gateway",
+    "description": "Standalone ABDM Gateway for Medtatvaa MistiqRad and iMagic Neo",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/patients": {
+      "post": {
+        "tags": [
+          "Patients"
+        ],
+        "summary": "Register Patient",
+        "description": "Registers a synthetic/local patient reference in the Medtatvaa Gateway.",
+        "operationId": "register_patient_api_v1_patients_post",
+        "parameters": [
+          {
+            "name": "x-idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Unique client request key to prevent duplicate submissions",
+              "title": "X-Idempotency-Key"
+            },
+            "description": "Unique client request key to prevent duplicate submissions"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatientCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/care-contexts": {
+      "post": {
+        "tags": [
+          "Care Contexts"
+        ],
+        "summary": "Create Care Context",
+        "description": "Creates/registers a local ultrasound/imaging care context in the database.",
+        "operationId": "create_care_context_api_v1_care_contexts_post",
+        "parameters": [
+          {
+            "name": "x-idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Unique client request key",
+              "title": "X-Idempotency-Key"
+            },
+            "description": "Unique client request key"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CareContextCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CareContextResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/records/diagnostic-report": {
+      "post": {
+        "tags": [
+          "Diagnostic Records"
+        ],
+        "summary": "Submit Diagnostic Report",
+        "description": "Submits a Medtatvaa canonical ultrasound/radiology report.\nValidates report fields, indexes care context, and queues for FHIR conversion.",
+        "operationId": "submit_diagnostic_report_api_v1_records_diagnostic_report_post",
+        "parameters": [
+          {
+            "name": "x-idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Unique client request ID to prevent duplicates",
+              "title": "X-Idempotency-Key"
+            },
+            "description": "Unique client request ID to prevent duplicates"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CanonicalDiagnosticReportPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/transactions/{transaction_id}": {
+      "get": {
+        "tags": [
+          "Transactions"
+        ],
+        "summary": "Get Transaction Status",
+        "description": "Returns normalized status and diagnostics for a gateway transaction.",
+        "operationId": "get_transaction_status_api_v1_transactions__transaction_id__get",
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Transaction Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CanonicalDiagnosticReportPayload": {
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "title": "Schema Version",
+            "default": "1.0",
+            "example": "1.0"
+          },
+          "facility": {
+            "$ref": "#/components/schemas/FacilityInfo"
+          },
+          "patient": {
+            "$ref": "#/components/schemas/PatientDemographics"
+          },
+          "study": {
+            "$ref": "#/components/schemas/StudyInfo"
+          },
+          "report": {
+            "$ref": "#/components/schemas/ReportInfo"
+          },
+          "reporting_practitioner": {
+            "$ref": "#/components/schemas/ReportingPractitioner"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility",
+          "patient",
+          "study",
+          "report",
+          "reporting_practitioner"
+        ],
+        "title": "CanonicalDiagnosticReportPayload"
+      },
+      "CareContextCreateRequest": {
+        "properties": {
+          "local_patient_id": {
+            "type": "string",
+            "title": "Local Patient Id",
+            "example": "P12345"
+          },
+          "abha_address": {
+            "type": "string",
+            "title": "Abha Address",
+            "example": "patient@sbx"
+          },
+          "care_context_reference": {
+            "type": "string",
+            "title": "Care Context Reference",
+            "description": "Study ID or Accession Number",
+            "example": "US-2026-0001"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name",
+            "description": "Readable study label",
+            "example": "Ultrasound Abdomen - 31 Oct 2026"
+          }
+        },
+        "type": "object",
+        "required": [
+          "local_patient_id",
+          "abha_address",
+          "care_context_reference",
+          "display_name"
+        ],
+        "title": "CareContextCreateRequest"
+      },
+      "CareContextResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "local_patient_id": {
+            "type": "string",
+            "title": "Local Patient Id"
+          },
+          "abha_address": {
+            "type": "string",
+            "title": "Abha Address"
+          },
+          "care_context_reference": {
+            "type": "string",
+            "title": "Care Context Reference"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "is_linked": {
+            "type": "boolean",
+            "title": "Is Linked"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "local_patient_id",
+          "abha_address",
+          "care_context_reference",
+          "display_name",
+          "is_linked"
+        ],
+        "title": "CareContextResponse"
+      },
+      "FacilityInfo": {
+        "properties": {
+          "facility_id": {
+            "type": "string",
+            "title": "Facility Id",
+            "description": "ABDM HFR Facility ID",
+            "example": "SBX-FACILITY-ID"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Name of Clinic/Imaging Centre",
+            "example": "Demo Imaging Centre"
+          }
+        },
+        "type": "object",
+        "required": [
+          "facility_id",
+          "name"
+        ],
+        "title": "FacilityInfo"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "PatientCreateRequest": {
+        "properties": {
+          "local_patient_id": {
+            "type": "string",
+            "title": "Local Patient Id",
+            "description": "Local RIS/PACS Patient ID",
+            "example": "P12345"
+          },
+          "abha_address": {
+            "type": "string",
+            "title": "Abha Address",
+            "description": "Patient ABHA Address",
+            "example": "patient@sbx"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "description": "Patient Full Name",
+            "example": "Test Patient"
+          },
+          "gender": {
+            "type": "string",
+            "pattern": "^(M|F|O)$",
+            "title": "Gender",
+            "description": "M, F, or O",
+            "example": "F"
+          },
+          "year_of_birth": {
+            "type": "integer",
+            "maximum": 2026.0,
+            "minimum": 1900.0,
+            "title": "Year Of Birth",
+            "example": 1980
+          }
+        },
+        "type": "object",
+        "required": [
+          "local_patient_id",
+          "abha_address",
+          "name",
+          "gender",
+          "year_of_birth"
+        ],
+        "title": "PatientCreateRequest"
+      },
+      "PatientDemographics": {
+        "properties": {
+          "local_patient_id": {
+            "type": "string",
+            "title": "Local Patient Id",
+            "example": "P12345"
+          },
+          "abha_address": {
+            "type": "string",
+            "title": "Abha Address",
+            "example": "sandbox-user@sbx"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "example": "Test Patient"
+          },
+          "gender": {
+            "type": "string",
+            "pattern": "^(M|F|O)$",
+            "title": "Gender",
+            "example": "F"
+          },
+          "year_of_birth": {
+            "type": "integer",
+            "maximum": 2026.0,
+            "minimum": 1900.0,
+            "title": "Year Of Birth",
+            "example": 1980
+          }
+        },
+        "type": "object",
+        "required": [
+          "local_patient_id",
+          "abha_address",
+          "name",
+          "gender",
+          "year_of_birth"
+        ],
+        "title": "PatientDemographics"
+      },
+      "PatientResponse": {
+        "properties": {
+          "local_patient_id": {
+            "type": "string",
+            "title": "Local Patient Id"
+          },
+          "abha_address": {
+            "type": "string",
+            "title": "Abha Address"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "gender": {
+            "type": "string",
+            "title": "Gender"
+          },
+          "year_of_birth": {
+            "type": "integer",
+            "title": "Year Of Birth"
+          },
+          "is_registered": {
+            "type": "boolean",
+            "title": "Is Registered",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "local_patient_id",
+          "abha_address",
+          "name",
+          "gender",
+          "year_of_birth"
+        ],
+        "title": "PatientResponse"
+      },
+      "ReportInfo": {
+        "properties": {
+          "local_report_id": {
+            "type": "string",
+            "title": "Local Report Id",
+            "example": "RPT-0001"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "FINAL",
+            "example": "FINAL"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title",
+            "example": "US Abdomen"
+          },
+          "findings": {
+            "type": "string",
+            "title": "Findings",
+            "example": "Synthetic test findings only. Liver and kidneys appear normal."
+          },
+          "impression": {
+            "type": "string",
+            "title": "Impression",
+            "example": "Synthetic test impression only. No focal abnormalities."
+          },
+          "finalized_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Finalized At",
+            "example": "2026-10-31T10:20:00+05:30"
+          }
+        },
+        "type": "object",
+        "required": [
+          "local_report_id",
+          "title",
+          "findings",
+          "impression",
+          "finalized_at"
+        ],
+        "title": "ReportInfo"
+      },
+      "ReportingPractitioner": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name",
+            "example": "Dr Test"
+          },
+          "registration_number": {
+            "type": "string",
+            "title": "Registration Number",
+            "example": "TEST-REG-1234"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "registration_number"
+        ],
+        "title": "ReportingPractitioner"
+      },
+      "StudyInfo": {
+        "properties": {
+          "local_study_id": {
+            "type": "string",
+            "title": "Local Study Id",
+            "example": "US-2026-0001"
+          },
+          "study_instance_uid": {
+            "type": "string",
+            "title": "Study Instance Uid",
+            "example": "1.2.840.113619.2.55.3.12345"
+          },
+          "modality": {
+            "type": "string",
+            "title": "Modality",
+            "default": "US",
+            "example": "US"
+          },
+          "study_date_time": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Study Date Time",
+            "example": "2026-10-31T10:00:00+05:30"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description",
+            "example": "Ultrasound Abdomen"
+          }
+        },
+        "type": "object",
+        "required": [
+          "local_study_id",
+          "study_instance_uid",
+          "study_date_time",
+          "description"
+        ],
+        "title": "StudyInfo"
+      },
+      "TransactionResponse": {
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id",
+            "description": "Medtatvaa unique tracking UUID",
+            "example": "gw_01J8K9..."
+          },
+          "status": {
+            "$ref": "#/components/schemas/TransactionStatus",
+            "default": "PENDING",
+            "example": "PENDING"
+          },
+          "abdm_request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Abdm Request Id",
+            "description": "Correlated ABDM Request ID",
+            "example": "c1a2b3..."
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "example": "Request accepted for processing"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transaction_id"
+        ],
+        "title": "TransactionResponse"
+      },
+      "TransactionStatus": {
+        "type": "string",
+        "enum": [
+          "CREATED",
+          "PENDING",
+          "LINKED",
+          "SHARED",
+          "COMPLETED",
+          "FAILED_RETRYABLE",
+          "FAILED_FINAL"
+        ],
+        "title": "TransactionStatus"
+      },
+      "TransactionStatusResponse": {
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id",
+            "example": "gw_01J8K9..."
+          },
+          "operation_type": {
+            "type": "string",
+            "title": "Operation Type",
+            "example": "REPORT_SHARE"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TransactionStatus",
+            "example": "COMPLETED"
+          },
+          "abdm_request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Abdm Request Id"
+          },
+          "abdm_transaction_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Abdm Transaction Id"
+          },
+          "retry_count": {
+            "type": "integer",
+            "title": "Retry Count",
+            "default": 0
+          },
+          "last_error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error Code"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transaction_id",
+          "operation_type",
+          "status",
+          "created_at"
+        ],
+        "title": "TransactionStatusResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
