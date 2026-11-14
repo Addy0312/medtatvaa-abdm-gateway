@@ -6,9 +6,25 @@ from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.main import app
+from app.core.database import AsyncSessionLocal
 from app.models.entities import CareContextRecord
 from app.services.discovery_service import DiscoveryService
 from app.schemas.abdm.discovery import CareContextDiscoverRequest, PatientDiscoveryQuery
+
+
+@pytest.fixture
+async def client():
+    """Async test HTTP client wired directly to the FastAPI app."""
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as ac:
+        yield ac
+
+
+@pytest.fixture
+async def db_session():
+    """Async database session fixture."""
+    async with AsyncSessionLocal() as session:
+        yield session
 
 
 @pytest.mark.asyncio
@@ -31,14 +47,16 @@ async def test_inbound_discover_endpoint_returns_202(client: AsyncClient):
 
     response = await client.post("/v0.5/care-contexts/discover", json=payload)
     assert response.status_code == 202
-    assert response.json()["status"] == "ACCEPTED"
-    assert response.json()["requestId"] == req_id
+    data = response.json()
+    assert data["status"] == "ACCEPTED"
+    assert data["requestId"] == req_id
 
 
 @pytest.mark.asyncio
 async def test_discovery_service_resolves_care_contexts(db_session: AsyncSession):
-    abha_address = f"patient_{uuid4().hex[:6]}@sbx"
-    local_pid = f"PAT-{uuid4().hex[:6].upper()}"
+    unique_suffix = uuid4().hex[:6]
+    abha_address = f"patient_{unique_suffix}@sbx"
+    local_pid = f"PAT-{unique_suffix.upper()}"
 
     # Pre-seed unlinked care context
     ctx = CareContextRecord(
@@ -57,7 +75,7 @@ async def test_discovery_service_resolves_care_contexts(db_session: AsyncSession
         transactionId=uuid4(),
         patient=PatientDiscoveryQuery(
             id=abha_address,
-            name="Test Patient"
+            name="Aditya Kumar"
         )
     )
 
@@ -77,7 +95,7 @@ async def test_discovery_service_not_found(db_session: AsyncSession):
         timestamp=datetime.now(timezone.utc),
         transactionId=uuid4(),
         patient=PatientDiscoveryQuery(
-            id="unknown_patient_999@sbx"
+            id="non_existent_patient_999@sbx"
         )
     )
 
