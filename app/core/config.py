@@ -1,3 +1,4 @@
+# app/core/config.py
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 
@@ -13,6 +14,8 @@ class Settings(BaseSettings):
 
     # ABDM Sandbox Credentials
     ABDM_BASE_URL: str = "https://dev.abdm.gov.in"
+    ABDM_SESSION_PATH: str = "/gateway/v0.5/sessions"
+    ABDM_CM_ID: str = "sbx"  # Sandbox Consent Manager ID
     ABDM_CLIENT_ID: Optional[str] = "mock_client_id"
     ABDM_CLIENT_SECRET: Optional[str] = "mock_client_secret"
     ABDM_CALLBACK_BASE_URL: Optional[str] = "http://localhost:8000"
