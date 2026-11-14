@@ -25,6 +25,103 @@
         }
       }
     },
+    "/api/v1/abha/verify-or-link": {
+      "post": {
+        "tags": [
+          "ABHA Identity (M1)"
+        ],
+        "summary": "Verify Or Link Abha",
+        "description": "Step 1 (M1): Initiate ABHA identity verification via Mobile OTP.",
+        "operationId": "verify_or_link_abha_api_v1_abha_verify_or_link_post",
+        "parameters": [
+          {
+            "name": "x-idempotency-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Unique client request ID",
+              "title": "X-Idempotency-Key"
+            },
+            "description": "Unique client request ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AbhaVerifyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AbhaVerificationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/abha/confirm-otp": {
+      "post": {
+        "tags": [
+          "ABHA Identity (M1)"
+        ],
+        "summary": "Confirm Abha Otp",
+        "description": "Step 2 (M1): Submit OTP to verify identity and retrieve patient profile.",
+        "operationId": "confirm_abha_otp_api_v1_abha_confirm_otp_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AbhaOtpConfirmRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AbhaVerificationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/patients": {
       "post": {
         "tags": [
@@ -252,6 +349,147 @@
   },
   "components": {
     "schemas": {
+      "AbhaOtpConfirmRequest": {
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id",
+            "description": "Transaction ID returned from verify-or-link",
+            "example": "gw_01J8K9..."
+          },
+          "otp": {
+            "type": "string",
+            "maxLength": 6,
+            "minLength": 6,
+            "title": "Otp",
+            "description": "6-digit verification OTP",
+            "example": "123456"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transaction_id",
+          "otp"
+        ],
+        "title": "AbhaOtpConfirmRequest"
+      },
+      "AbhaProfileData": {
+        "properties": {
+          "abha_address": {
+            "type": "string",
+            "title": "Abha Address"
+          },
+          "abha_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Abha Number"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "gender": {
+            "type": "string",
+            "title": "Gender"
+          },
+          "year_of_birth": {
+            "type": "integer",
+            "title": "Year Of Birth"
+          },
+          "mobile": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mobile"
+          }
+        },
+        "type": "object",
+        "required": [
+          "abha_address",
+          "name",
+          "gender",
+          "year_of_birth"
+        ],
+        "title": "AbhaProfileData"
+      },
+      "AbhaVerificationResponse": {
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TransactionStatus"
+          },
+          "action_required": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action Required",
+            "description": "Next client action, e.g. OTP_REQUIRED",
+            "example": "OTP_REQUIRED"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AbhaProfileData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "transaction_id",
+          "status",
+          "message"
+        ],
+        "title": "AbhaVerificationResponse"
+      },
+      "AbhaVerifyRequest": {
+        "properties": {
+          "abha_address": {
+            "type": "string",
+            "title": "Abha Address",
+            "description": "Patient ABHA Address",
+            "example": "sandbox-user@sbx"
+          },
+          "auth_mode": {
+            "type": "string",
+            "title": "Auth Mode",
+            "description": "Authentication mode: MOBILE_OTP or AADHAAR_OTP",
+            "default": "MOBILE_OTP",
+            "example": "MOBILE_OTP"
+          }
+        },
+        "type": "object",
+        "required": [
+          "abha_address"
+        ],
+        "title": "AbhaVerifyRequest"
+      },
       "CanonicalDiagnosticReportPayload": {
         "properties": {
           "schema_version": {

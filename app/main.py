@@ -8,8 +8,9 @@ from app.core.exceptions import MedtatvaaBaseException
 from app.api.v1.health import router as health_router
 from app.api.v1.patients import router as patients_router
 from app.api.v1.care_contexts import router as care_contexts_router
-from app.api.v1.transactions import router as transactions_router
 from app.api.v1.records import router as records_router
+from app.api.v1.transactions import router as transactions_router
+from app.api.v1.abha import router as abha_router
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -49,6 +50,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 # Register versioned API routers
 app.include_router(health_router, prefix=settings.API_V1_STR)
+app.include_router(abha_router, prefix=settings.API_V1_STR)
 app.include_router(patients_router, prefix=settings.API_V1_STR)
 app.include_router(care_contexts_router, prefix=settings.API_V1_STR)
 app.include_router(records_router, prefix=settings.API_V1_STR)
