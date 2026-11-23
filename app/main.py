@@ -13,13 +13,14 @@ from app.api.v1.care_contexts import router as care_contexts_router
 from app.api.v1.records import router as records_router
 from app.api.v1.transactions import router as transactions_router
 from app.api.v1.abha import router as abha_router      
+from app.api.v1.hip_link import router as hip_link_router
 from app.api.v0_5.discovery import router as v0_5_discovery_router
 from app.api.v0_5.linking import router as v0_5_linking_router
+from app.api.v0_5.hip_linking import router as v0_5_hip_linking_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Ensure all tables (including link_sessions) exist
     from app.core.database import engine, Base
     import app.models.entities
     async with engine.begin() as conn:
@@ -36,7 +37,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Custom exception handler for Medtatvaa domain errors 
+
 @app.exception_handler(MedtatvaaBaseException)
 async def medtatvaa_exception_handler(request: Request, exc: MedtatvaaBaseException):
     return JSONResponse(
@@ -50,7 +51,7 @@ async def medtatvaa_exception_handler(request: Request, exc: MedtatvaaBaseExcept
         }
     )
 
-# Normalize standard Pydantic validation errors        
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
@@ -64,17 +65,21 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         }
     )
 
-# Register versioned API routers
+
+# Register versioned internal API routers
 app.include_router(health_router, prefix=settings.API_V1_STR)
 app.include_router(abha_router, prefix=settings.API_V1_STR)
 app.include_router(patients_router, prefix=settings.API_V1_STR)
 app.include_router(care_contexts_router, prefix=settings.API_V1_STR)
+app.include_router(hip_link_router, prefix=settings.API_V1_STR)
 app.include_router(records_router, prefix=settings.API_V1_STR)
 app.include_router(transactions_router, prefix=settings.API_V1_STR)
 
 # ABDM v0.5 Callbacks
 app.include_router(v0_5_discovery_router, prefix="/v0.5")
 app.include_router(v0_5_linking_router, prefix="/v0.5")
+app.include_router(v0_5_hip_linking_router, prefix="/v0.5")
+
 
 @app.get("/")
 async def root():

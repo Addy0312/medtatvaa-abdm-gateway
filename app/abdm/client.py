@@ -55,56 +55,36 @@ class AbdmClient:
         except httpx.RequestError as exc:
             raise AbdmUnavailableException(f"Network error communicating with ABDM Gateway: {str(exc)}")
 
-    async def post_on_discover(self, payload: dict[str, Any]) -> dict[str, Any]:
-        """Dispatches callback to ABDM Gateway at POST /v0.5/care-contexts/on-discover."""
+    async def _safe_post(self, endpoint: str, payload: dict[str, Any]) -> dict[str, Any]:
+        """Helper for asynchronous ABDM calls with graceful offline handling."""
         request_id = str(payload.get("requestId")) if payload.get("requestId") else None
         try:
-            response = await self.post(
-                endpoint="/v0.5/care-contexts/on-discover",
-                payload=payload,
-                request_id=request_id
-            )
+            response = await self.post(endpoint=endpoint, payload=payload, request_id=request_id)
             return {
                 "status_code": response.status_code,
                 "body": response.json() if response.content else {}
             }
         except Exception as exc:
-            logger.warning(f"Unable to dispatch on-discover to ABDM Gateway: {exc}")
+            logger.warning(f"Unable to dispatch {endpoint} to ABDM Gateway: {exc}")
             return {"status_code": 503, "error": str(exc), "mocked_acknowledged": True}
+
+    async def post_on_discover(self, payload: dict[str, Any]) -> dict[str, Any]:
+        return await self._safe_post("/v0.5/care-contexts/on-discover", payload)
 
     async def post_on_link_init(self, payload: dict[str, Any]) -> dict[str, Any]:
-        """Dispatches callback to ABDM Gateway at POST /v0.5/links/link/on-init."""
-        request_id = str(payload.get("requestId")) if payload.get("requestId") else None
-        try:
-            response = await self.post(
-                endpoint="/v0.5/links/link/on-init",
-                payload=payload,
-                request_id=request_id
-            )
-            return {
-                "status_code": response.status_code,
-                "body": response.json() if response.content else {}
-            }
-        except Exception as exc:
-            logger.warning(f"Unable to dispatch on-link-init to ABDM Gateway: {exc}")
-            return {"status_code": 503, "error": str(exc), "mocked_acknowledged": True}
+        return await self._safe_post("/v0.5/links/link/on-init", payload)
 
     async def post_on_link_confirm(self, payload: dict[str, Any]) -> dict[str, Any]:
-        """Dispatches callback to ABDM Gateway at POST /v0.5/links/link/on-confirm."""
-        request_id = str(payload.get("requestId")) if payload.get("requestId") else None
-        try:
-            response = await self.post(
-                endpoint="/v0.5/links/link/on-confirm",
-                payload=payload,
-                request_id=request_id
-            )
-            return {
-                "status_code": response.status_code,
-                "body": response.json() if response.content else {}
-            }
-        except Exception as exc:
-            logger.warning(f"Unable to dispatch on-link-confirm to ABDM Gateway: {exc}")
-            return {"status_code": 503, "error": str(exc), "mocked_acknowledged": True}
+        return await self._safe_post("/v0.5/links/link/on-confirm", payload)
+
+    async def post_users_auth_init(self, payload: dict[str, Any]) -> dict[str, Any]:
+        return await self._safe_post("/v0.5/users/auth/init", payload)
+
+    async def post_users_auth_confirm(self, payload: dict[str, Any]) -> dict[str, Any]:
+        return await self._safe_post("/v0.5/users/auth/confirm", payload)
+
+    async def post_add_contexts(self, payload: dict[str, Any]) -> dict[str, Any]:
+        return await self._safe_post("/v0.5/links/link/add-contexts", payload)
 
 
 # Global client singleton
