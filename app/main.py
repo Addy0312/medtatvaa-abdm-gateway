@@ -1,17 +1,31 @@
+# app/main.py
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
+from fastapi.exceptions import RequestValidationError  
 from app.core.config import settings
-from app.core.exceptions import MedtatvaaBaseException
+from app.core.exceptions import MedtatvaaBaseException 
 
 # Import routers
-from app.api.v1.health import router as health_router
+from app.api.v1.health import router as health_router  
 from app.api.v1.patients import router as patients_router
 from app.api.v1.care_contexts import router as care_contexts_router
 from app.api.v1.records import router as records_router
 from app.api.v1.transactions import router as transactions_router
-from app.api.v1.abha import router as abha_router
+from app.api.v1.abha import router as abha_router      
 from app.api.v0_5.discovery import router as v0_5_discovery_router
+from app.api.v0_5.linking import router as v0_5_linking_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Ensure all tables (including link_sessions) exist
+    from app.core.database import engine, Base
+    import app.models.entities
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -19,15 +33,16 @@ app = FastAPI(
     description="Standalone ABDM Gateway for Medtatvaa MistiqRad and iMagic Neo",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
-# Custom exception handler for Medtatvaa domain errors
+# Custom exception handler for Medtatvaa domain errors 
 @app.exception_handler(MedtatvaaBaseException)
 async def medtatvaa_exception_handler(request: Request, exc: MedtatvaaBaseException):
     return JSONResponse(
         status_code=exc.status_code,
         content={
-            "transaction_id": exc.transaction_id,
+            "transaction_id": exc.transaction_id,      
             "status": "FAILED_FINAL",
             "error_code": exc.error_code,
             "message": exc.message,
@@ -35,7 +50,7 @@ async def medtatvaa_exception_handler(request: Request, exc: MedtatvaaBaseExcept
         }
     )
 
-# Normalize standard Pydantic validation errors
+# Normalize standard Pydantic validation errors        
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
@@ -43,7 +58,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={
             "transaction_id": None,
             "status": "FAILED_FINAL",
-            "error_code": "FHIR_VALIDATION_FAILED",
+            "error_code": "FHIR_VALIDATION_FAILED",    
             "message": "Invalid request payload format",
             "details": exc.errors(),
         }
@@ -56,7 +71,10 @@ app.include_router(patients_router, prefix=settings.API_V1_STR)
 app.include_router(care_contexts_router, prefix=settings.API_V1_STR)
 app.include_router(records_router, prefix=settings.API_V1_STR)
 app.include_router(transactions_router, prefix=settings.API_V1_STR)
+
+# ABDM v0.5 Callbacks
 app.include_router(v0_5_discovery_router, prefix="/v0.5")
+app.include_router(v0_5_linking_router, prefix="/v0.5")
 
 @app.get("/")
 async def root():
