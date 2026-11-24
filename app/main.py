@@ -2,21 +2,22 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError  
+from fastapi.exceptions import RequestValidationError
 from app.core.config import settings
-from app.core.exceptions import MedtatvaaBaseException 
+from app.core.exceptions import MedtatvaaBaseException
 
 # Import routers
-from app.api.v1.health import router as health_router  
+from app.api.v1.health import router as health_router
 from app.api.v1.patients import router as patients_router
 from app.api.v1.care_contexts import router as care_contexts_router
 from app.api.v1.records import router as records_router
 from app.api.v1.transactions import router as transactions_router
-from app.api.v1.abha import router as abha_router      
+from app.api.v1.abha import router as abha_router
 from app.api.v1.hip_link import router as hip_link_router
 from app.api.v0_5.discovery import router as v0_5_discovery_router
 from app.api.v0_5.linking import router as v0_5_linking_router
 from app.api.v0_5.hip_linking import router as v0_5_hip_linking_router
+from app.api.v0_5.consent import router as v0_5_consent_router
 
 
 @asynccontextmanager
@@ -43,7 +44,7 @@ async def medtatvaa_exception_handler(request: Request, exc: MedtatvaaBaseExcept
     return JSONResponse(
         status_code=exc.status_code,
         content={
-            "transaction_id": exc.transaction_id,      
+            "transaction_id": exc.transaction_id,
             "status": "FAILED_FINAL",
             "error_code": exc.error_code,
             "message": exc.message,
@@ -59,7 +60,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={
             "transaction_id": None,
             "status": "FAILED_FINAL",
-            "error_code": "FHIR_VALIDATION_FAILED",    
+            "error_code": "FHIR_VALIDATION_FAILED",
             "message": "Invalid request payload format",
             "details": exc.errors(),
         }
@@ -79,6 +80,7 @@ app.include_router(transactions_router, prefix=settings.API_V1_STR)
 app.include_router(v0_5_discovery_router, prefix="/v0.5")
 app.include_router(v0_5_linking_router, prefix="/v0.5")
 app.include_router(v0_5_hip_linking_router, prefix="/v0.5")
+app.include_router(v0_5_consent_router, prefix="/v0.5")
 
 
 @app.get("/")

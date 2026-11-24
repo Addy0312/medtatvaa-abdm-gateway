@@ -86,6 +86,9 @@ class AbdmClient:
     async def post_add_contexts(self, payload: dict[str, Any]) -> dict[str, Any]:
         return await self._safe_post("/v0.5/links/link/add-contexts", payload)
 
+    async def post_consent_on_notify(self, payload: dict[str, Any]) -> dict[str, Any]:
+        return await self._safe_post("/v0.5/consents/hip/on-notify", payload)
+
 
 # Global client singleton
 abdm_client = AbdmClient()
