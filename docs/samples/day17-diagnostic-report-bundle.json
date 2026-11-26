@@ -1,0 +1,408 @@
+{
+  "resourceType": "Bundle",
+  "id": "d3830cf9-43c9-57a0-97a9-5a1de4e4f802",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2026-10-31T10:25:00+05:30",
+    "profile": [
+      "https://nrces.in/ndhm/fhir/r4/StructureDefinition/DocumentBundle|6.5.0"
+    ]
+  },
+  "identifier": {
+    "system": "https://bundle.medtatvaa.example/id",
+    "value": "d3830cf9-43c9-57a0-97a9-5a1de4e4f802"
+  },
+  "type": "document",
+  "timestamp": "2026-10-31T10:25:00+05:30",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:9e46b3be-ce8d-54f9-94a7-37ac9a81d076",
+      "resource": {
+        "resourceType": "Composition",
+        "id": "9e46b3be-ce8d-54f9-94a7-37ac9a81d076",
+        "meta": {
+          "profile": [
+            "https://nrces.in/ndhm/fhir/r4/StructureDefinition/DiagnosticReportRecord|6.5.0"
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>US Abdomen</p></div>"
+        },
+        "status": "final",
+        "type": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "4201000179104",
+              "display": "Imaging report"
+            }
+          ],
+          "text": "US Abdomen"
+        },
+        "subject": {
+          "reference": "urn:uuid:64b4b844-06da-5ea5-9e99-6a0018447931"
+        },
+        "date": "2026-10-31T10:20:00+05:30",
+        "author": [
+          {
+            "reference": "urn:uuid:729dc07a-026e-50ee-919e-42c281f07923"
+          }
+        ],
+        "title": "US Abdomen",
+        "custodian": {
+          "reference": "urn:uuid:388a81e7-48c3-5e15-8e36-e0094b4ef905"
+        },
+        "section": [
+          {
+            "title": "US Abdomen",
+            "code": {
+              "coding": [
+                {
+                  "system": "http://snomed.info/sct",
+                  "code": "4201000179104",
+                  "display": "Imaging report"
+                }
+              ]
+            },
+            "entry": [
+              {
+                "reference": "urn:uuid:80e7216b-b94a-5722-a458-b38350b004bf",
+                "type": "DiagnosticReport"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:64b4b844-06da-5ea5-9e99-6a0018447931",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "64b4b844-06da-5ea5-9e99-6a0018447931",
+        "meta": {
+          "profile": [
+            "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Patient|6.5.0"
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Patient: Test Patient (P12345)</p></div>"
+        },
+        "identifier": [
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "MR",
+                  "display": "Medical record number"
+                }
+              ]
+            },
+            "system": "https://patient.medtatvaa.example/mrn",
+            "value": "P12345"
+          },
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "https://nrces.in/ndhm/fhir/r4/CodeSystem/ndhm-identifier-type-code",
+                  "code": "ABHA",
+                  "display": "Ayushman Bharat Health Account (ABHA) ID"
+                }
+              ],
+              "text": "ABHA address"
+            },
+            "system": "https://abha.abdm.gov.in/address",
+            "value": "sandbox-user@sbx"
+          }
+        ],
+        "name": [
+          {
+            "text": "Test Patient"
+          }
+        ],
+        "gender": "female",
+        "birthDate": "1980"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:729dc07a-026e-50ee-919e-42c281f07923",
+      "resource": {
+        "resourceType": "Practitioner",
+        "id": "729dc07a-026e-50ee-919e-42c281f07923",
+        "meta": {
+          "profile": [
+            "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Practitioner|6.5.0"
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Practitioner: Dr Test (TEST-REG-1234)</p></div>"
+        },
+        "identifier": [
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "PRN",
+                  "display": "Provider number"
+                }
+              ]
+            },
+            "system": "https://nmc.medtatvaa.example/reg",
+            "value": "TEST-REG-1234"
+          }
+        ],
+        "name": [
+          {
+            "text": "Dr Test"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:388a81e7-48c3-5e15-8e36-e0094b4ef905",
+      "resource": {
+        "resourceType": "Organization",
+        "id": "388a81e7-48c3-5e15-8e36-e0094b4ef905",
+        "meta": {
+          "profile": [
+            "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Organization|6.5.0"
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Organization: Demo Imaging Centre (SBX-FACILITY-ID)</p></div>"
+        },
+        "identifier": [
+          {
+            "type": {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+                  "code": "XX",
+                  "display": "Organization identifier"
+                }
+              ]
+            },
+            "system": "https://facility.medtatvaa.example/id",
+            "value": "SBX-FACILITY-ID"
+          }
+        ],
+        "type": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/organization-type",
+                "code": "prov",
+                "display": "Healthcare Provider"
+              }
+            ]
+          }
+        ],
+        "name": "Demo Imaging Centre"
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:80e7216b-b94a-5722-a458-b38350b004bf",
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "80e7216b-b94a-5722-a458-b38350b004bf",
+        "meta": {
+          "profile": [
+            "https://nrces.in/ndhm/fhir/r4/StructureDefinition/DiagnosticReportImaging|6.5.0"
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>US Abdomen: Synthetic test impression only. No focal abnormalities.</p></div>"
+        },
+        "identifier": [
+          {
+            "system": "https://report.medtatvaa.example/id",
+            "value": "RPT-0001"
+          }
+        ],
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://snomed.info/sct",
+                "code": "394914008",
+                "display": "Radiology - specialty (qualifier value)"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "18748-4",
+              "display": "Diagnostic imaging study"
+            }
+          ],
+          "text": "US Abdomen"
+        },
+        "subject": {
+          "reference": "urn:uuid:64b4b844-06da-5ea5-9e99-6a0018447931"
+        },
+        "effectiveDateTime": "2026-10-31T10:00:00+05:30",
+        "issued": "2026-10-31T10:20:00+05:30",
+        "performer": [
+          {
+            "reference": "urn:uuid:388a81e7-48c3-5e15-8e36-e0094b4ef905"
+          }
+        ],
+        "resultsInterpreter": [
+          {
+            "reference": "urn:uuid:729dc07a-026e-50ee-919e-42c281f07923"
+          }
+        ],
+        "result": [
+          {
+            "reference": "urn:uuid:45a0303b-207d-58a5-ada6-2a8c17964467"
+          },
+          {
+            "reference": "urn:uuid:a204764d-6855-58b3-98c7-d34b04f39c7a"
+          }
+        ],
+        "conclusion": "Synthetic test impression only. No focal abnormalities.",
+        "presentedForm": [
+          {
+            "contentType": "application/pdf",
+            "data": "JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2JqCjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2JqCjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCAyMDAgMjAwXSA+PgplbmRvYmoKeHJlZgowIDQKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDEwIDAwMDAwIG4gCjAwMDAwMDAwNjEgMDAwMDAgbiAKMDAwMDAwMDExOCAwMDAwMCBuIAp0cmFpbGVyCjw8IC9TaXplIDQgL1Jvb3QgMSAwIFIgPj4Kc3RhcnR4cmVmCjE4MgolJUVPRgo=",
+            "size": 329,
+            "title": "US Abdomen"
+          }
+        ]
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:45a0303b-207d-58a5-ada6-2a8c17964467",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "45a0303b-207d-58a5-ada6-2a8c17964467",
+        "meta": {
+          "profile": [
+            "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Observation|6.5.0"
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Findings: Synthetic test findings only. Liver and kidneys appear normal.</p></div>"
+        },
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "imaging",
+                "display": "Imaging"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "18782-3",
+              "display": "Radiology Study observation (narrative)"
+            }
+          ],
+          "text": "Findings"
+        },
+        "subject": {
+          "reference": "urn:uuid:64b4b844-06da-5ea5-9e99-6a0018447931"
+        },
+        "effectiveDateTime": "2026-10-31T10:00:00+05:30",
+        "issued": "2026-10-31T10:20:00+05:30",
+        "performer": [
+          {
+            "reference": "urn:uuid:729dc07a-026e-50ee-919e-42c281f07923"
+          },
+          {
+            "reference": "urn:uuid:388a81e7-48c3-5e15-8e36-e0094b4ef905"
+          }
+        ],
+        "valueString": "Synthetic test findings only. Liver and kidneys appear normal.",
+        "method": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "16310003",
+              "display": "Ultrasonography"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "fullUrl": "urn:uuid:a204764d-6855-58b3-98c7-d34b04f39c7a",
+      "resource": {
+        "resourceType": "Observation",
+        "id": "a204764d-6855-58b3-98c7-d34b04f39c7a",
+        "meta": {
+          "profile": [
+            "https://nrces.in/ndhm/fhir/r4/StructureDefinition/Observation|6.5.0"
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p>Impression: Synthetic test impression only. No focal abnormalities.</p></div>"
+        },
+        "status": "final",
+        "category": [
+          {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+                "code": "imaging",
+                "display": "Imaging"
+              }
+            ]
+          }
+        ],
+        "code": {
+          "coding": [
+            {
+              "system": "http://loinc.org",
+              "code": "19005-8",
+              "display": "Radiology Imaging study [Impression] (narrative)"
+            }
+          ],
+          "text": "Impression"
+        },
+        "subject": {
+          "reference": "urn:uuid:64b4b844-06da-5ea5-9e99-6a0018447931"
+        },
+        "effectiveDateTime": "2026-10-31T10:00:00+05:30",
+        "issued": "2026-10-31T10:20:00+05:30",
+        "performer": [
+          {
+            "reference": "urn:uuid:729dc07a-026e-50ee-919e-42c281f07923"
+          },
+          {
+            "reference": "urn:uuid:388a81e7-48c3-5e15-8e36-e0094b4ef905"
+          }
+        ],
+        "valueString": "Synthetic test impression only. No focal abnormalities.",
+        "method": {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "16310003",
+              "display": "Ultrasonography"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
