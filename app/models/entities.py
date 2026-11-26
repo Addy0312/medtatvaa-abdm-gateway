@@ -2,7 +2,7 @@
 import enum
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Integer, DateTime, Text, UniqueConstraint, func
+from sqlalchemy import Column, String, Integer, DateTime, Text, UniqueConstraint, ForeignKey, func
 from app.core.database import Base
 
 
@@ -107,3 +107,53 @@ class ConsentArtefactRecord(Base):
         nullable=False
     )
     updated_at = Column(DateTime(timezone=True), onupdate=func.now(), nullable=True)
+
+
+class DiagnosticReportStore(Base):
+    """
+    Persists the full canonical diagnostic report JSON keyed by
+    (abha_address, care_context_reference, local_report_id) and linked to
+    a unique idempotency_key and non-null gateway_transaction_id.
+    """
+    __tablename__ = "diagnostic_reports"
+
+    id = Column(
+        String(36),
+        primary_key=True,
+        default=lambda: str(uuid.uuid4())
+    )
+    abha_address = Column(String(128), nullable=False, index=True)
+    local_patient_id = Column(String(64), nullable=False, index=True)
+    care_context_reference = Column(String(128), nullable=False, index=True)
+    local_report_id = Column(String(64), nullable=False, index=True)
+    idempotency_key = Column(String(128), unique=True, nullable=False, index=True)
+    gateway_transaction_id = Column(
+        String(36),
+        ForeignKey("gateway_transactions.gateway_transaction_id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    payload_json = Column(Text, nullable=False)
+    payload_hash = Column(String(64), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        server_default=func.now(),
+        nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=True
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "abha_address",
+            "care_context_reference",
+            "local_report_id",
+            name="uq_diag_report_abha_care_context_report_id",
+        ),
+    )

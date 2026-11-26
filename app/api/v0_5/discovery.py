@@ -1,5 +1,7 @@
 # app/api/v0_5/discovery.py
-from fastapi import APIRouter, BackgroundTasks, Depends, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal, get_db
@@ -27,14 +29,36 @@ async def care_contexts_discover(
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
+    request_id_str = str(request.requestId)
     tx = GatewayTransaction(
         operation_type="CARE_CONTEXT_DISCOVER",
         status=TransactionStatus.CREATED,
-        abdm_request_id=str(request.requestId),
-        idempotency_key=str(request.requestId),
+        abdm_request_id=request_id_str,
+        idempotency_key=request_id_str,
     )
     db.add(tx)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        existing_tx = (
+            await db.execute(
+                select(GatewayTransaction).where(GatewayTransaction.idempotency_key == request_id_str)
+            )
+        ).scalar_one_or_none()
+        if existing_tx is None:
+            raise
+        if existing_tx.operation_type == "CARE_CONTEXT_DISCOVER":
+            return {"status": "ACCEPTED", "requestId": request_id_str, "duplicate": True}
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail={
+                "transaction_id": existing_tx.gateway_transaction_id,
+                "status": "FAILED_FINAL",
+                "error_code": "IDEMPOTENCY_OPERATION_CONFLICT",
+                "message": "Idempotency key already exists for a different operation type.",
+            },
+        )
 
     background_tasks.add_task(_handle_discovery_background, request)
-    return {"status": "ACCEPTED", "requestId": str(request.requestId)}
+    return {"status": "ACCEPTED", "requestId": request_id_str}

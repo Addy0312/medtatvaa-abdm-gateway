@@ -232,13 +232,53 @@
         }
       }
     },
+    "/api/v1/care-contexts/hip-link": {
+      "post": {
+        "tags": [
+          "Care Contexts - HIP Initiated Link"
+        ],
+        "summary": "Trigger HIP-Initiated Linking for Registered Care Contexts",
+        "description": "Initiates ABDM patient authentication to push care contexts directly to patient's ABHA.",
+        "operationId": "trigger_hip_link_api_v1_care_contexts_hip_link_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HipLinkTriggerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/records/diagnostic-report": {
       "post": {
         "tags": [
           "Diagnostic Records"
         ],
         "summary": "Submit Diagnostic Report",
-        "description": "Submits a Medtatvaa canonical ultrasound/radiology report.\nValidates report fields, indexes care context, and queues for FHIR conversion.",
+        "description": "Submits a Medtatvaa canonical ultrasound/radiology report.\nValidates report fields and patient/care-context identity, ensures care context,\npersists canonical JSON atomically, and returns TransactionResponse without\noverwriting conflicting records.",
         "operationId": "submit_diagnostic_report_api_v1_records_diagnostic_report_post",
         "parameters": [
           {
@@ -273,6 +313,16 @@
                 }
               }
             }
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Conflict"
           },
           "422": {
             "description": "Validation Error",
@@ -314,6 +364,283 @@
                 "schema": {
                   "$ref": "#/components/schemas/TransactionStatusResponse"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v0.5/care-contexts/discover": {
+      "post": {
+        "tags": [
+          "ABDM M2 - Care Context Discovery"
+        ],
+        "summary": "ABDM Inbound: Discover Care Contexts",
+        "description": "Invoked asynchronously by ABDM Gateway when a patient initiates discovery.",
+        "operationId": "care_contexts_discover_v0_5_care_contexts_discover_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CareContextDiscoverRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v0.5/links/link/init": {
+      "post": {
+        "tags": [
+          "ABDM M2 - Care Context Linking"
+        ],
+        "summary": "ABDM Inbound: Initialize Care Context Linking",
+        "description": "Invoked by ABDM Gateway when patient clicks Link Records in PHR app.",
+        "operationId": "link_init_v0_5_links_link_init_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkInitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v0.5/links/link/confirm": {
+      "post": {
+        "tags": [
+          "ABDM M2 - Care Context Linking"
+        ],
+        "summary": "ABDM Inbound: Confirm Care Context Linking with OTP",
+        "description": "Invoked by ABDM Gateway when patient inputs OTP.",
+        "operationId": "link_confirm_v0_5_links_link_confirm_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LinkConfirmRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v0.5/users/auth/on-init": {
+      "post": {
+        "tags": [
+          "ABDM M2 - HIP-Initiated Linking Callbacks"
+        ],
+        "summary": "ABDM Inbound Callback: Auth On-Init",
+        "operationId": "users_auth_on_init_v0_5_users_auth_on_init_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserAuthOnInitCallback"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v0.5/users/auth/on-confirm": {
+      "post": {
+        "tags": [
+          "ABDM M2 - HIP-Initiated Linking Callbacks"
+        ],
+        "summary": "ABDM Inbound Callback: Auth On-Confirm",
+        "operationId": "users_auth_on_confirm_v0_5_users_auth_on_confirm_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserAuthOnConfirmCallback"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v0.5/links/link/on-add-contexts": {
+      "post": {
+        "tags": [
+          "ABDM M2 - HIP-Initiated Linking Callbacks"
+        ],
+        "summary": "ABDM Inbound Callback: On-Add-Contexts",
+        "operationId": "links_on_add_contexts_v0_5_links_link_on_add_contexts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddCareContextsOnAddCallback"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v0.5/consents/hip/notify": {
+      "post": {
+        "tags": [
+          "ABDM M2 - Consent Notification"
+        ],
+        "summary": "ABDM Inbound: Consent Notification",
+        "description": "Invoked by ABDM Gateway when a patient grants, revokes, or expires a consent artefact.",
+        "operationId": "consents_hip_notify_v0_5_consents_hip_notify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsentHipNotifyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
@@ -490,6 +817,134 @@
         ],
         "title": "AbhaVerifyRequest"
       },
+      "AddCareContextsOnAddCallback": {
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Requestid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "acknowledgement": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AddContextsAcknowledgement"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorRepresentation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resp": {
+            "$ref": "#/components/schemas/GatewayResponseReference"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requestId",
+          "timestamp",
+          "resp"
+        ],
+        "title": "AddCareContextsOnAddCallback"
+      },
+      "AddContextsAcknowledgement": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "SUCCESS or FAILURE"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "AddContextsAcknowledgement"
+      },
+      "AuthOnConfirmDetail": {
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "title": "Accesstoken"
+          },
+          "validity": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Validity"
+          },
+          "patient": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Patient"
+          }
+        },
+        "type": "object",
+        "required": [
+          "accessToken"
+        ],
+        "title": "AuthOnConfirmDetail"
+      },
+      "AuthOnInitDetail": {
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "title": "Transactionid"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mode"
+          },
+          "meta": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meta"
+          }
+        },
+        "type": "object",
+        "required": [
+          "transactionId"
+        ],
+        "title": "AuthOnInitDetail"
+      },
       "CanonicalDiagnosticReportPayload": {
         "properties": {
           "schema_version": {
@@ -558,6 +1013,64 @@
         ],
         "title": "CareContextCreateRequest"
       },
+      "CareContextDiscoverRequest": {
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Requestid",
+            "description": "Unique UUID for this discovery request"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp",
+            "description": "ISO UTC timestamp"
+          },
+          "transactionId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Transactionid",
+            "description": "Transaction ID across the discovery session"
+          },
+          "patient": {
+            "$ref": "#/components/schemas/PatientDiscoveryQuery"
+          },
+          "hipId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hipid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requestId",
+          "timestamp",
+          "transactionId",
+          "patient"
+        ],
+        "title": "CareContextDiscoverRequest"
+      },
+      "CareContextRef": {
+        "properties": {
+          "referenceNumber": {
+            "type": "string",
+            "title": "Referencenumber",
+            "description": "Care context reference (e.g. study UID)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "referenceNumber"
+        ],
+        "title": "CareContextRef"
+      },
       "CareContextResponse": {
         "properties": {
           "id": {
@@ -596,6 +1109,385 @@
         ],
         "title": "CareContextResponse"
       },
+      "ConsentCareContextRef": {
+        "properties": {
+          "patientReference": {
+            "type": "string",
+            "title": "Patientreference"
+          },
+          "careContextReference": {
+            "type": "string",
+            "title": "Carecontextreference"
+          }
+        },
+        "type": "object",
+        "required": [
+          "patientReference",
+          "careContextReference"
+        ],
+        "title": "ConsentCareContextRef"
+      },
+      "ConsentDateRange": {
+        "properties": {
+          "from": {
+            "type": "string",
+            "format": "date-time",
+            "title": "From"
+          },
+          "to": {
+            "type": "string",
+            "format": "date-time",
+            "title": "To"
+          }
+        },
+        "type": "object",
+        "required": [
+          "from",
+          "to"
+        ],
+        "title": "ConsentDateRange"
+      },
+      "ConsentDetail": {
+        "properties": {
+          "schemaVersion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schemaversion",
+            "default": "v1"
+          },
+          "consentId": {
+            "type": "string",
+            "title": "Consentid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Createdat"
+          },
+          "patient": {
+            "$ref": "#/components/schemas/ConsentPatientRef"
+          },
+          "careContexts": {
+            "items": {
+              "$ref": "#/components/schemas/ConsentCareContextRef"
+            },
+            "type": "array",
+            "title": "Carecontexts"
+          },
+          "purpose": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConsentPurpose"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hip": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConsentEntityRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hiu": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConsentEntityRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consentManager": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConsentEntityRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hiTypes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Hitypes"
+          },
+          "permission": {
+            "$ref": "#/components/schemas/ConsentPermission"
+          }
+        },
+        "type": "object",
+        "required": [
+          "consentId",
+          "createdAt",
+          "patient",
+          "permission"
+        ],
+        "title": "ConsentDetail"
+      },
+      "ConsentEntityRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "ConsentEntityRef"
+      },
+      "ConsentFrequency": {
+        "properties": {
+          "unit": {
+            "type": "string",
+            "title": "Unit",
+            "default": "HOUR"
+          },
+          "value": {
+            "type": "integer",
+            "title": "Value",
+            "default": 1
+          },
+          "repeats": {
+            "type": "integer",
+            "title": "Repeats",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "ConsentFrequency"
+      },
+      "ConsentHipNotifyRequest": {
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Requestid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "notification": {
+            "$ref": "#/components/schemas/ConsentNotificationBody"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requestId",
+          "timestamp",
+          "notification"
+        ],
+        "title": "ConsentHipNotifyRequest"
+      },
+      "ConsentNotificationBody": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "GRANTED, REVOKED, or EXPIRED"
+          },
+          "consentId": {
+            "type": "string",
+            "title": "Consentid"
+          },
+          "consentDetail": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConsentDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "signature": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signature"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "consentId"
+        ],
+        "title": "ConsentNotificationBody"
+      },
+      "ConsentPatientRef": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Patient ABHA address"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "ConsentPatientRef"
+      },
+      "ConsentPermission": {
+        "properties": {
+          "accessMode": {
+            "type": "string",
+            "title": "Accessmode",
+            "default": "VIEW"
+          },
+          "dateRange": {
+            "$ref": "#/components/schemas/ConsentDateRange"
+          },
+          "dataEraseAt": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Dataeraseat"
+          },
+          "frequency": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConsentFrequency"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "dateRange",
+          "dataEraseAt"
+        ],
+        "title": "ConsentPermission"
+      },
+      "ConsentPurpose": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "refUri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refuri"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "code"
+        ],
+        "title": "ConsentPurpose"
+      },
+      "ErrorRepresentation": {
+        "properties": {
+          "code": {
+            "type": "integer",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorRepresentation"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "transaction_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Transaction Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "FAILED_FINAL"
+          },
+          "error_code": {
+            "type": "string",
+            "title": "Error Code",
+            "example": "ABHA_INVALID"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "example": "The provided ABHA address does not exist."
+          },
+          "details": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error_code",
+          "message"
+        ],
+        "title": "ErrorResponse"
+      },
       "FacilityInfo": {
         "properties": {
           "facility_id": {
@@ -618,6 +1510,21 @@
         ],
         "title": "FacilityInfo"
       },
+      "GatewayResponseReference": {
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Requestid",
+            "description": "The requestId of the incoming request"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requestId"
+        ],
+        "title": "GatewayResponseReference"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -630,6 +1537,146 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "HipLinkTriggerRequest": {
+        "properties": {
+          "abha_address": {
+            "type": "string",
+            "title": "Abha Address",
+            "description": "Verified patient ABHA address"
+          },
+          "local_patient_id": {
+            "type": "string",
+            "title": "Local Patient Id",
+            "description": "Local patient ID in MistiqRad/iMagic Neo"
+          },
+          "patient_name": {
+            "type": "string",
+            "title": "Patient Name",
+            "default": "Medtatvaa Patient"
+          },
+          "care_context_references": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Care Context References",
+            "description": "Study references to link"
+          },
+          "auth_mode": {
+            "type": "string",
+            "title": "Auth Mode",
+            "description": "MOBILE_OTP or DEMOGRAPHICS",
+            "default": "DEMOGRAPHICS"
+          }
+        },
+        "type": "object",
+        "required": [
+          "abha_address",
+          "local_patient_id",
+          "care_context_references"
+        ],
+        "title": "HipLinkTriggerRequest"
+      },
+      "Identifier": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "description": "e.g. MOBILE, MR, NDHM_HEALTH_NUMBER"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value",
+            "description": "Identifier value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "value"
+        ],
+        "title": "Identifier"
+      },
+      "LinkConfirmRequest": {
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Requestid",
+            "description": "Unique UUID for this confirm request"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp",
+            "description": "ISO UTC timestamp"
+          },
+          "confirmation": {
+            "$ref": "#/components/schemas/LinkConfirmationQuery"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requestId",
+          "timestamp",
+          "confirmation"
+        ],
+        "title": "LinkConfirmRequest"
+      },
+      "LinkConfirmationQuery": {
+        "properties": {
+          "linkRefNumber": {
+            "type": "string",
+            "title": "Linkrefnumber",
+            "description": "The link reference number provided during init"
+          },
+          "token": {
+            "type": "string",
+            "title": "Token",
+            "description": "User-entered OTP token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "linkRefNumber",
+          "token"
+        ],
+        "title": "LinkConfirmationQuery"
+      },
+      "LinkInitRequest": {
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Requestid",
+            "description": "Unique UUID for this init request"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp",
+            "description": "ISO UTC timestamp"
+          },
+          "transactionId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Transactionid",
+            "description": "Transaction ID across the linking session"
+          },
+          "patient": {
+            "$ref": "#/components/schemas/PatientLinkInitQuery"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requestId",
+          "timestamp",
+          "transactionId",
+          "patient"
+        ],
+        "title": "LinkInitRequest"
       },
       "PatientCreateRequest": {
         "properties": {
@@ -716,6 +1763,96 @@
           "year_of_birth"
         ],
         "title": "PatientDemographics"
+      },
+      "PatientDiscoveryQuery": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Patient ABHA Address, e.g. aditya@abdm"
+          },
+          "verifiedIdentifiers": {
+            "items": {
+              "$ref": "#/components/schemas/Identifier"
+            },
+            "type": "array",
+            "title": "Verifiedidentifiers"
+          },
+          "unverifiedIdentifiers": {
+            "items": {
+              "$ref": "#/components/schemas/Identifier"
+            },
+            "type": "array",
+            "title": "Unverifiedidentifiers"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "gender": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gender"
+          },
+          "yearOfBirth": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Yearofbirth"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id"
+        ],
+        "title": "PatientDiscoveryQuery"
+      },
+      "PatientLinkInitQuery": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id",
+            "description": "Patient ABHA Address, e.g. aditya@sbx"
+          },
+          "referenceNumber": {
+            "type": "string",
+            "title": "Referencenumber",
+            "description": "Local patient reference ID in Medtatvaa"
+          },
+          "careContexts": {
+            "items": {
+              "$ref": "#/components/schemas/CareContextRef"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Carecontexts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "referenceNumber",
+          "careContexts"
+        ],
+        "title": "PatientLinkInitQuery"
       },
       "PatientResponse": {
         "properties": {
@@ -997,6 +2134,94 @@
           "created_at"
         ],
         "title": "TransactionStatusResponse"
+      },
+      "UserAuthOnConfirmCallback": {
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Requestid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "auth": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthOnConfirmDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorRepresentation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resp": {
+            "$ref": "#/components/schemas/GatewayResponseReference"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requestId",
+          "timestamp",
+          "resp"
+        ],
+        "title": "UserAuthOnConfirmCallback"
+      },
+      "UserAuthOnInitCallback": {
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Requestid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "auth": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AuthOnInitDetail"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ErrorRepresentation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "resp": {
+            "$ref": "#/components/schemas/GatewayResponseReference"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requestId",
+          "timestamp",
+          "resp"
+        ],
+        "title": "UserAuthOnInitCallback"
       },
       "ValidationError": {
         "properties": {
